@@ -1,6 +1,7 @@
 import * as cdk from '@aws-cdk/core';
 import * as lambda from '@aws-cdk/aws-lambda';
 import * as dynamodb from '@aws-cdk/aws-dynamodb';
+import { RemovalPolicy } from '@aws-cdk/core';
 
 export interface HitCounterProps {
     // INFO: the function for which we want to count URL hits
@@ -12,13 +13,18 @@ export class HitCounter extends cdk.Construct {
     // INFO: allows accessing the counter function
     public readonly handler: lambda.Function;
 
+    // INFO: allows accessing the hit counter table
+    public readonly table: dynamodb.Table;
+
 
     constructor(scope: cdk.Construct, id: string, props: HitCounterProps) {
         super(scope, id)
 
         const table = new dynamodb.Table(this, 'Hits', {
-            partitionKey: { name: 'path', type: dynamodb.AttributeType.STRING }
+            partitionKey: { name: 'path', type: dynamodb.AttributeType.STRING },
+            removalPolicy: RemovalPolicy.DESTROY
         });
+        this.table = table;
 
         this.handler = new lambda.Function(this, 'HitCounterHandler', {
             runtime: lambda.Runtime.NODEJS_10_X,
