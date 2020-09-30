@@ -13,7 +13,7 @@ export class HitCounter extends cdk.Construct {
     // INFO: allows accessing the counter function
     public readonly handler: lambda.Function;
 
-    // INFO: allows accessing the hit counter table
+    // INFO: allows accessing the hit counter
     public readonly table: dynamodb.Table;
 
 
@@ -22,6 +22,7 @@ export class HitCounter extends cdk.Construct {
 
         const table = new dynamodb.Table(this, 'Hits', {
             partitionKey: { name: 'path', type: dynamodb.AttributeType.STRING },
+            encryption: dynamodb.TableEncryption.AWS_MANAGED,
             removalPolicy: RemovalPolicy.DESTROY
         });
         this.table = table;
