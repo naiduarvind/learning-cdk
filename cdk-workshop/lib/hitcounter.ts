@@ -6,6 +6,15 @@ import { RemovalPolicy } from '@aws-cdk/core';
 export interface HitCounterProps {
     // INFO: the function for which we want to count URL hits
     downstream: lambda.IFunction;
+
+    /**
+     * The read capacity units for the table
+     *
+     * Must be greater than 5 and less than 20
+     *
+     * @default 5
+    */
+    readCapacity?: number;
 }
 
 export class HitCounter extends cdk.Construct {
@@ -18,12 +27,16 @@ export class HitCounter extends cdk.Construct {
 
 
     constructor(scope: cdk.Construct, id: string, props: HitCounterProps) {
+        if (props.readCapacity !== undefined && (props.readCapacity < 5 || props.readCapacity > 20)) {
+            throw new Error('readCapacity must be greater than 5 and less than 20');
+        }
         super(scope, id)
 
         const table = new dynamodb.Table(this, 'Hits', {
             partitionKey: { name: 'path', type: dynamodb.AttributeType.STRING },
             encryption: dynamodb.TableEncryption.AWS_MANAGED,
-            removalPolicy: RemovalPolicy.DESTROY
+            removalPolicy: RemovalPolicy.DESTROY,
+            readCapacity: props.readCapacity || 5
         });
         this.table = table;
 
